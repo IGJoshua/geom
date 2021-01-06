@@ -1,5 +1,5 @@
 {:paths ["src" "resources"]
- :deps {org.clojure/clojure {:mvn/version "1.10.1"}
+ :deps {org.clojure/clojure {:mvn/version "1.10.2"}
         net.mikera/core.matrix {:mvn/version "0.62.0"}}
  :aliases
  {:dev {:extra-paths ["dev"]
@@ -12,9 +12,14 @@
                  :sha "f7ef16dc3b8332b0d77bc0274578ad5270fbfedd"}}
    :main-opts ["-m" "cognitect.test-runner"
                "-d" "test"]}
-  :jar {:extra-deps {seancorfield/depstar {:mvn/version "1.0.94"}}
-        :main-opts ["-m" "hf.depstar.jar" "geom.jar"]}
-  :install {:extra-deps {deps-deploy {:mvn/version "0.0.9"}}
+  :depstar {:extra-deps {seancorfield/depstar {:mvn/version "2.0.165"}}
+            :ns-default hf.depstar
+            :exec-args {:group-id "org.suskalo"
+                        :artifact-id "geom"
+                        :version "0.1.0-SNAPSHOT"
+                        :jar "geom.jar"
+                        :sync-pom true}}
+  :install {:extra-deps {deps-deploy/deps-deploy {:mvn/version "0.0.9"}}
             :main-opts ["-m" "deps-deploy.deps-deploy" "install" "geom.jar"]}
-  :deploy {:extra-deps {deps-deploy {:mvn/version "0.0.9"}}
+  :deploy {:extra-deps {deps-deploy/deps-deploy {:mvn/version "0.0.9"}}
            :main-opts ["-m" "deps-deploy.deps-deploy" "deploy" "geom.jar"]}}}
