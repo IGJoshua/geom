@@ -1,14 +1,15 @@
 (ns org.suskalo.geom.grade-2
   (:require
    [clojure.core.matrix :as m]
-   [org.suskalo.geom.ops :as ops])
+   [org.suskalo.geom.ops :as ops]
+   [org.suskalo.geom.protocols :as proto])
   (:refer-clojure
    :rename {vector core-vector}))
 
 (def ^:private grade 2)
 
 (deftype Multivec2 [s v b]
-  ops/Multivector
+  proto/Multivector
   (dot [v1 v2]
     (let [a s
           d b
@@ -72,6 +73,10 @@
           (* b z)
           (* c y -1)
           (* d x)))))
+  (add [_ v2]
+    (Multivec2. (+ s (.-s v2))
+                (m/add v (.-v v2))
+                (+ b (.-b v2))))
   (scale [_ scale]
     (Multivec2. (* s scale) (m/mul v scale) (* b scale)))
   (reverse [_]

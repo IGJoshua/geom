@@ -1,47 +1,88 @@
 (ns org.suskalo.geom.ops
   "Defines the core operations for doing geometric algebra."
+  (:require
+   [clojure.core.matrix :as m]
+   [org.suskalo.geom.protocols :as proto]
+   [org.suskalo.geom.ops :as ops])
   (:refer-clojure
-   :rename {reverse core-reverse})
-  (:require [clojure.core.matrix :as m]))
+   :rename {reverse core-reverse}))
 
-(defprotocol Multivector
-  "Common operations on geometric algebra objects."
-  (dot [v1 v2] "Computes the dot product between two multivectors.")
-  (wedge [v1 v2] "Computes the wedge product between two multivectors.")
-  (prod [v1 v2] "Computes the geometric product of two multivectors.")
-  (scale [v s] "Scales a multivector by a factor.")
-  (reverse [v]
-    "Computes the reverse of a given multivector.
-    This is often represented in texts with the dagger operator.")
-  (grade [v] "The highest grade of this multivector.")
+(defmulti dot
+  "Computes the dot product between two multivectors."
+  (fn [v1 v2]
+    [(class v1) (class v2)]))
 
-  (component [v grade] "Fetches the object of given `grade` from the multivector.")
-  (with-component [v grade val] "Returns a new multivector with `val` for the given `grade`.")
-  (zero [v] "Creates a zero vector of this grade."))
+(defmethod dot :default
+  [v1 v2]
+  (proto/dot v1 v2))
 
-(defn vector-inverse
-  "Given a multivector with only a grade-1 portion, constructs the inverse."
+(defmulti wedge
+  "Computes the wedge product between two multivectors."
+  (fn [v1 v2]
+    [(class v1) (class v2)]))
+
+(defmethod wedge :default
+  [v1 v2]
+  (proto/wedge v1 v2))
+
+(defmulti prod
+  "Computes the geometric product of two multivectors."
+  (fn [v1 v2]
+    [(class v1) (class v2)]))
+
+(defmethod prod :default
+  [v1 v2]
+  (proto/prod v1 v2))
+
+(defmulti add
+  "Computes the sum of two multivectors."
+  (fn [v1 v2]
+    [(class v1) (class v2)]))
+
+(defmethod add :default
+  [v1 v2]
+  (proto/add v1 v2))
+
+(defn scale
+  "Scales a multivector by a factor."
+  [v s]
+  (proto/scale v s))
+
+(defn sub
+  "Computes the difference between two multivectors."
+  [v1 v2]
+  (add v1 (scale v2 -1.0)))
+
+(defn reverse
+  "Computes the reverse of a given multivector.
+  This is often represented in texts with the dagger operator."
   [v]
-  (scale v (/ (component (prod v v) 0))))
+  (proto/reverse v))
 
-(defn vector-reflect
-  "Reflects vector `v` across `w`."
-  [v w]
-  (prod (prod (vector-inverse w) v) w))
-
-(defn normalise-component
-  "Normalises the grade-`c` component."
-  [v c]
-  (let [component (component v c)
-        factor (cond-> component
-                 (m/array? component) m/magnitude
-                 :finally /)]
-    (scale v factor)))
-
-(defn vector-normalise
-  "Normalises a vector."
+(defn grade
+  "The highest grade of this multivector."
   [v]
-  (normalise-component v 1))
+  (proto/grade v))
+
+(defn component
+  "Fetches the object of given `grade` from the multivector."
+  [v grade]
+  (proto/component v grade))
+
+(defn with-component
+  "Returns a new multivector with `val` for the given `grade`."
+  [v grade val]
+  (proto/with-component v grade val))
+
+(defn zero
+  "Creates a zero vector of this grade."
+  [v]
+  (proto/zero v))
+
+(defn select-component
+  "Selects only the component with the given `grade`."
+  [v grade]
+  (with-component (zero v) grade (component v grade)))
 
 (defn magnitude-squared
   "The sum of squares of all components of the multivector."
@@ -64,6 +105,29 @@
   "Normalises the entire multivector to a magnitude of 1."
   [v]
   (scale v (/ (magnitude v))))
+
+(defn inverse
+  "Fetches the inverse of a multivector."
+  [v]
+  ;; FIXME(Joshua): Ensure that all invertible vectors are correctly inverted
+  (let [divisor (prod v (reverse v))]
+    (doseq [i (map inc (range (grade divisor)))
+            :let [to-test (component divisor i)]]
+      (if (m/array? to-test)
+        (assert (m/zero-matrix? to-test) "The vector is invertible")
+        (assert (zero? to-test) "The vector is invertible")))
+    (assert (not (zero? (component divisor 0))) "The vector is invertible")
+    (scale (reverse v) (/ (component divisor 0)))))
+
+(defn reflect
+  "Reflects multivector `v` across a plane perpendicular to vector `w`."
+  [v w]
+  (scale (prod (prod (inverse w) v) w) -1.0))
+
+(defn div
+  "Computes the quotient of two multivectors."
+  [v1 v2]
+  (prod v1 (inverse v2)))
 
 (defn rotor-from-unit
   "Constructs a rotor which rotates around the given unit multivector."
