@@ -1,5 +1,6 @@
 {:paths ["src" "resources"]
  :deps {org.clojure/clojure {:mvn/version "1.10.2"}
+        org.clojure/spec.alpha {:mvn/version "0.2.176"}
         net.mikera/core.matrix {:mvn/version "0.62.0"}}
  :aliases
  {:dev {:extra-paths ["dev"]
