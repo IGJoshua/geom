@@ -69,7 +69,7 @@
   "Constructs a rotor which rotates around the given unit multivector."
   [unit-plane radians]
   (with-component
-    (scale unit-plane (Math/sin (/ radians 2)))
+    (scale unit-plane (- (Math/sin (/ radians 2))))
     0
     (Math/cos (/ radians 2))))
 
@@ -81,4 +81,4 @@
 (defn rotate
   "Applies a rotation to a vector."
   [v rotor]
-  (prod (prod (reverse rotor) v) rotor))
+  (prod (prod rotor v) (reverse rotor)))
