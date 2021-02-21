@@ -117,15 +117,13 @@
 (defn inverse
   "Fetches the inverse of a multivector."
   [v]
-  ;; FIXME(Joshua): Ensure that all invertible vectors are correctly inverted
   (let [divisor (prod v (reverse v))]
-    (doseq [i (map inc (range (grade divisor)))
-            :let [to-test (component divisor i)]]
-      (if (m/array? to-test)
-        (assert (m/zero-matrix? to-test) "The vector is invertible")
-        (assert (zero? to-test) "The vector is invertible")))
-    (assert (not (zero? (component divisor 0))) "The vector is invertible")
-    (scale (reverse v) (/ (component divisor 0)))))
+    (assert (zero? (with-component divisor 0 0)) (str "Multivector "
+                                                      (pr-str v)
+                                                      " is invertible."))
+    (if (not (zero? (select-component divisor 0)))
+      (scale (reverse v) (/ (component divisor 0)))
+      (proto/inverse v))))
 
 (defn reflect
   "Reflects multivector `v` across a plane perpendicular to vector `w`."

@@ -16,4 +16,14 @@
 
   (component [v grade] "Fetches the object of given `grade` from the multivector.")
   (with-component [v grade val] "Returns a new multivector with `val` for the given `grade`.")
-  (zero [v] "Creates a zero vector of this grade."))
+  (zero [v] "Creates a zero vector of this grade.")
+
+  (inverse [v]
+    "Computes the inverse, if one exists, of the given multivector.
+    Implementation is not required for inverses to be computed, but a limited
+    number of multivectors will have an inverse if it is not.
+
+    Throws an ex-info with the multivector in the `:multivec` key of the data if
+    no inverse can be computed. An additional key of `:unimplemented` may be
+    truthy if the reason for the lack of inverse is due to a lack of
+    implementaiton."))

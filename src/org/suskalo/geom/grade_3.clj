@@ -201,7 +201,11 @@
       2 (Multivec3. s v val t)
       3 (Multivec3. s v b val)))
   (zero [_]
-    (Multivec3. 0 [0 0 0] [0 0 0] 0)))
+    (Multivec3. 0 [0 0 0] [0 0 0] 0))
+
+  (inverse [v]
+    (throw (ex-info "Attempted a non-trivial inverse of a grade-3 multivec."
+                    {:multivec v :unimplemented true}))))
 
 (defmethod print-method Multivec3 [v ^java.io.Writer w]
   (.write w (str "#org.suskalo.geom.grade-3.Multivec3 ["
