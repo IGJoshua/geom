@@ -5,7 +5,8 @@
    [org.suskalo.geom.protocols :as proto]
    [org.suskalo.geom.ops :as ops])
   (:refer-clojure
-   :rename {reverse core-reverse}))
+   :rename {reverse core-reverse
+            zero? core-zero?}))
 
 (defmulti dot
   "Computes the dot product between two multivectors."
@@ -105,6 +106,13 @@
   "Normalises the entire multivector to a magnitude of 1."
   [v]
   (scale v (/ (magnitude v))))
+
+(def ^:dynamic *epsilon* 1.0E-12)
+
+(defn zero?
+  "Checks if the magnitude of a vector is within [[*epsilon*]] of zero."
+  [v]
+  (< (magnitude-squared v) (* *epsilon* *epsilon*)))
 
 (defn inverse
   "Fetches the inverse of a multivector."
