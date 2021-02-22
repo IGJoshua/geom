@@ -148,7 +148,11 @@
   [plane-of-rotation radians]
   (rotor-from-unit (normalise (with-component plane-of-rotation 0 0)) radians))
 
-(defn rotate
-  "Applies a rotation to a vector."
-  [v rotor]
+(defmulti rotate
+  "Applies a rotation to a multivector."
+  (fn [rotor v]
+    [(class rotor) (class v)]))
+
+(defmethod rotate :default
+  [rotor v]
   (prod (prod rotor v) (reverse rotor)))
