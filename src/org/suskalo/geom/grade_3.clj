@@ -3,6 +3,8 @@
    [clojure.core.matrix :as m]
    [org.suskalo.geom.ops :as ops]
    [org.suskalo.geom.protocols :as proto])
+  (:import
+   (mikera vectorz.AVector))
   (:refer-clojure
    :rename {vector core-vector}))
 
@@ -283,3 +285,85 @@
   Uses XYZ rotation."
   [pitch yaw roll]
   (ops/prod (rotate-z roll) (ops/prod (rotate-y yaw) (rotate-x pitch))))
+
+(deftype Rotor3 [s b])
+
+(defn multivec->rotor
+  "Converts a general multivector to a specialized rotor."
+  [v]
+  (Rotor3. (.-s v) (.-b v)))
+
+(defn rotor->multivec
+  "Converts a specialized rotor to a general multivector."
+  [r]
+  (multivec (.-s r) [0 0 0] (.-b r) 0))
+
+(defmethod ops/rotate [Rotor3 AVector]
+  [r v]
+  (let [a (.-s r)
+        [b c d] (m/eseq (.-b r))
+        [x y z] (m/eseq v)]
+    (m/array
+     [(- (+ (* a a x)
+            (* a b y 2.0)
+            (* b c z 2.0)
+            (* c d y 2.0)
+            (* c c x))
+         (* d d x)
+         (* a d z 2.0)
+         (* b b x))
+      (- (+ (* d b z)
+            (* a a y)
+            (* a c z 2.0)
+            (* c d x 2.0)
+            (* b d z)
+            (* d d y))
+         (* a b x 2.0)
+         (* b b y)
+         (* c c y))
+      (- (+ (* a d x 2.0)
+            (* b d y 2.0)
+            (* b c x 2.0)
+            (* a a z)
+            (* b b z))
+         (* d d z)
+         (* a c y)
+         (* c c z)
+         (* c a y))])))
+
+(defmethod ops/rotate [Rotor3 Multivec3]
+  [r v]
+  (ops/rotate (rotor->multivec r) v))
+
+(defmethod ops/prod [Rotor3 Multivec3]
+  [r v]
+  (ops/prod (rotor->multivec r) v))
+
+(defmethod ops/prod [Multivec3 Rotor3]
+  [v r]
+  (ops/prod v (rotor->multivec r)))
+
+(defmethod ops/prod [Rotor3 Rotor3]
+  [r1 r2]
+  (let [a (.-s r1)
+        [b c d] (m/eseq (.-b r1))
+        x (.-s r2)
+        [y z w] (m/eseq (.-b r2))]
+    (Rotor3.
+     (- (* a x)
+        (* b y)
+        (* c z)
+        (* d w))
+     (m/array
+      [(+ (* a y)
+          (* b x)
+          (* c w -1.0)
+          (* d z))
+       (+ (* a z)
+          (* b w)
+          (* c x)
+          (* d y -1.0))
+       (+ (* a w)
+          (* b z -1.0)
+          (* c y)
+          (* d x))]))))
