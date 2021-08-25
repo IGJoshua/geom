@@ -123,9 +123,10 @@
   "Fetches the inverse of a multivector."
   [v]
   (let [divisor (prod v (reverse v))]
-    (assert (zero? (with-component divisor 0 0)) (str "Multivector "
-                                                      (pr-str v)
-                                                      " is invertible."))
+    (assert (zero? (with-component divisor 0 0))
+            (str "Multivector "
+                 (pr-str v)
+                 " is invertible."))
     (if (not (zero? (select-component divisor 0)))
       (scale (reverse v) (/ (component divisor 0)))
       (proto/inverse v))))
