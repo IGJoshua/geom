@@ -17,6 +17,7 @@
   (component [v grade] "Fetches the object of given `grade` from the multivector.")
   (with-component [v grade val] "Returns a new multivector with `val` for the given `grade`.")
   (zero [v] "Creates a zero vector of this grade.")
+  (pseudoscalar [v] "Creates the unit pseudoscalar of this grade.")
 
   (inverse [v]
     "Computes the inverse, if one exists, of the given multivector.

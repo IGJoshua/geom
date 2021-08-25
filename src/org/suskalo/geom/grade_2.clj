@@ -95,6 +95,8 @@
       2 (Multivec2. s v val)))
   (zero [_]
     (Multivec2. 0 [0 0] 0))
+  (pseudoscalar [_]
+    (Multivec2. 0 [0 0] 1))
 
   (inverse [v]
     (throw (ex-info "Attempted a non-trivial inverse of a grade-2 multivec."

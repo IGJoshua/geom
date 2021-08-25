@@ -80,6 +80,11 @@
   [v]
   (proto/zero v))
 
+(defn pseudoscalar
+  "Creates the unit pseudoscalar of this grade."
+  [v]
+  (proto/pseudoscalar v))
+
 (defn select-component
   "Selects only the component with the given `grade`."
   [v grade]
